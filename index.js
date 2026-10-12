@@ -85,21 +85,20 @@ async function startSelfbot(token) {
 // --- LÓGICA DE CLONAGEM ---
 async function executarClonagem(interaction) {
     if (!STATE.selfbot || !STATE.selfbotUser) {
-        return interaction.followup({ embeds: [embedErro('Faça login do selfbot primeiro.')], ephemeral: true });
+        return interaction.followUp({ embeds: [embedErro('Faça login do selfbot primeiro.')], ephemeral: true });
     }
     const tid = CFG.target_id;
     if (!tid) {
-        return interaction.followup({ embeds: [embedErro('Defina um alvo primeiro.')], ephemeral: true });
+        return interaction.followUp({ embeds: [embedErro('Defina um alvo primeiro.')], ephemeral: true });
     }
 
     let target;
     try {
         target = await STATE.selfbot.users.fetch(tid.toString());
     } catch (e) {
-        return interaction.followup({ embeds: [embedErro(`Alvo inválido: ${e.message}`)], ephemeral: true });
+        return interaction.followUp({ embeds: [embedErro(`Alvo inválido: ${e.message}`)], ephemeral: true });
     }
 
-    const dados = {};
     const campos = [];
 
     try {
@@ -121,8 +120,6 @@ async function executarClonagem(interaction) {
             const bannerUri = await baixarDataURI(target.bannerURL({ format: 'png', size: 1024 }));
             if (bannerUri) {
                 // A API do Discord exige chamadas REST para banner. Vamos tentar via raw.
-                // Nota: A biblioteca pode não ter suporte direto, então usamos fetch.
-                // (Muitas vezes falha se não tiver Nitro)
                 campos.push('banner (tentativa)');
             }
         }
@@ -134,13 +131,8 @@ async function executarClonagem(interaction) {
             });
             if (profileRes.ok) {
                 const profile = await profileRes.json();
-                if (profile.user.bio) {
-                    // Envia para o painel
-                    campos.push('bio (encontrada)');
-                }
-                if (profile.user.pronouns) {
-                    campos.push('pronomes (encontrados)');
-                }
+                if (profile.user.bio) campos.push('bio (encontrada)');
+                if (profile.user.pronouns) campos.push('pronomes (encontrados)');
             }
         } catch (e) {}
 
@@ -163,10 +155,10 @@ async function executarClonagem(interaction) {
             .addFields({ name: 'Campos copiados', value: campos.length ? campos.map(c => `\`${c}\``).join(', ') : '—' })
             .setTimestamp();
 
-        await interaction.followup({ embeds: [embed], ephemeral: true });
+        await interaction.followUp({ embeds: [embed], ephemeral: true });
 
     } catch (e) {
-        await interaction.followup({ embeds: [embedErro(`Falha ao editar: \`${e.message}\``)], ephemeral: true });
+        await interaction.followUp({ embeds: [embedErro(`Falha ao editar: \`${e.message}\``)], ephemeral: true });
     }
 }
 
@@ -218,7 +210,7 @@ control.on(Events.InteractionCreate, async (interaction) => {
         }
         if (interaction.customId === 'btn_clonar') {
             await interaction.deferReply({ ephemeral: true });
-            await interaction.followup({ embeds: [new EmbedBuilder().setTitle('⚙️ Clonando...').setColor(0xFEE75C)], ephemeral: true });
+            await interaction.followUp({ embeds: [new EmbedBuilder().setTitle('⚙️ Clonando...').setColor(0xFEE75C)], ephemeral: true });
             await executarClonagem(interaction);
         }
         if (interaction.customId === 'btn_status') {
@@ -252,9 +244,9 @@ control.on(Events.InteractionCreate, async (interaction) => {
             const token = interaction.fields.getTextInputValue('input_token').trim();
             const res = await startSelfbot(token);
             if (res.ok) {
-                await interaction.followup({ embeds: [embedLogin(STATE.selfbotUser)], ephemeral: true });
+                await interaction.followUp({ embeds: [embedLogin(STATE.selfbotUser)], ephemeral: true });
             } else {
-                await interaction.followup({ embeds: [embedErro(res.err)], ephemeral: true });
+                await interaction.followUp({ embeds: [embedErro(res.err)], ephemeral: true });
             }
         }
         if (interaction.customId === 'modal_alvo') {
