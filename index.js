@@ -319,4 +319,4 @@ if (!BOT_TOKEN) {
     process.exit(1);
 }
 
-control.login(BOT_TOKEN);a
+control.login(BOT_TOKEN);
